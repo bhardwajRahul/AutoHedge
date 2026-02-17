@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "autohedge"
-version = "0.1.0"
+version = "0.1.2"
 description = "autohedge - TGSC"
 license = "MIT"
 authors = ["Kye Gomez <kye@apac.ai>"]
@@ -28,6 +28,8 @@ tickr-agent="*"
 pydantic = "*"
 loguru = "*"
 swarm-models = "*"
+httpx = "*"
+solders = "*"
 
 
 [tool.poetry.group.lint.dependencies]

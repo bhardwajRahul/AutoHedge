@@ -14,6 +14,7 @@ agent_workspace
 build/
 develop-eggs/
 dist/
+experimental/
 downloads/
 eggs/
 .eggs/

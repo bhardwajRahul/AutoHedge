@@ -5,4 +5,6 @@ loguru
 swarm-models
 fastapi 
 uvicorn 
-requests 
+requests
+httpx
+solders

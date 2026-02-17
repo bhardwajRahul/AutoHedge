@@ -1,6 +1,6 @@
 """
 Stocks API client for ticker overview, balance sheets, and daily OHLC.
-Uses Massive API (https://massive.com/docs). Set POLYGON_API_KEY and optionally
+Uses Massive API (https://massive.com/docs). Set MASSIVE_API_KEY and optionally
 POLYGON_BASE_URL in .env.
 """
 
@@ -12,12 +12,11 @@ import httpx
 from loguru import logger
 
 DEFAULT_BASE_URL = "https://api.massive.com"
-BASE_URL = os.getenv("POLYGON_BASE_URL", DEFAULT_BASE_URL)
 
 
 def _get_headers() -> dict[str, str]:
     headers: dict[str, str] = {}
-    key = os.getenv("POLYGON_API_KEY")
+    key = os.getenv("MASSIVE_API_KEY")
     if key:
         headers["Authorization"] = f"Bearer {key}"
     return headers
@@ -28,7 +27,7 @@ def _get(
     *,
     params: Optional[dict[str, Any]] = None,
 ) -> str:
-    url = f"{BASE_URL.rstrip('/')}{path}"
+    url = f"{DEFAULT_BASE_URL.rstrip('/')}{path}"
     try:
         with httpx.Client(timeout=15) as client:
             resp = client.get(

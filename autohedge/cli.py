@@ -2,7 +2,6 @@
 AutoHedge CLI — welcome screen and interactive REPL.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -11,6 +10,9 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.columns import Columns
 from rich import box
+from dotenv import load_dotenv
+
+load_dotenv()
 
 try:
     from importlib.metadata import version as _version
@@ -31,8 +33,7 @@ BANNER_ART = r"""
 """
 
 TIPS = [
-    "Enter a task to run (e.g. 'Analyze NVDA for 50k allocation')",
-    "Type 'stocks AAPL,MSFT' to set tickers, then run a task",
+    "Enter a task prompt to run (e.g. 'Analyze NVDA for 50k allocation')",
     "Type 'quit' or 'exit' to leave",
     "Type 'help' or '?' for commands",
 ]
@@ -82,8 +83,7 @@ def _welcome() -> None:
     tips_text = Text(
         "Tips for getting started\n", style="bold orange1"
     )
-    tips_text.append(" — ".join(TIPS[:2]) + "\n", style="dim")
-    tips_text.append(" — ".join(TIPS[2:]), style="dim")
+    tips_text.append(" — ".join(TIPS), style="dim")
 
     recent = _get_recent_tasks()
     recent_heading = Text("Recent activity\n", style="bold orange1")
@@ -135,8 +135,7 @@ def _welcome() -> None:
     )
 
 
-def run_repl(default_stocks: list[str] | None = None) -> None:
-    stocks = default_stocks or ["NVDA"]
+def run_repl() -> None:
     _welcome()
 
     while True:
@@ -161,25 +160,13 @@ def run_repl(default_stocks: list[str] | None = None) -> None:
                 console.print(f"  [dim]·[/] {t}")
             continue
 
-        if lower.startswith("stocks "):
-            raw = line[6:].strip()
-            stocks = [
-                s.strip().upper()
-                for s in raw.replace(",", " ").split()
-                if s.strip()
-            ]
-            console.print(
-                f"[dim]Stocks set to: {', '.join(stocks)}[/]"
-            )
-            continue
-
-        # Treat as task
+        # Treat as task prompt
         task = line
         _append_recent(task)
         try:
             from autohedge import AutoHedge
 
-            system = AutoHedge(stocks=stocks)
+            system = AutoHedge()
             console.print("[dim]Running...[/]")
             result = system.run(task=task)
             console.print(
@@ -195,16 +182,7 @@ def run_repl(default_stocks: list[str] | None = None) -> None:
 
 def main() -> None:
     """Entry point for the AutoHedge CLI."""
-    default_stocks = os.environ.get("AUTOHEDGE_STOCKS")
-    if default_stocks:
-        stocks = [
-            s.strip().upper()
-            for s in default_stocks.split(",")
-            if s.strip()
-        ]
-    else:
-        stocks = None
-    run_repl(default_stocks=stocks)
+    run_repl()
     sys.exit(0)
 
 

@@ -191,3 +191,12 @@ Generate quantitative analysis for the {stock}
 """
 
 DIRECTOR_DECISION_PROMPT = "According to the thesis, {thesis}, should we execute this order: {task}"
+
+# Director: discover tickers from task (no predefined list)
+DIRECTOR_TICKER_DISCOVERY_PROMPT = """
+Given the following task, determine which stock tickers are relevant to analyze.
+
+Task: {task}
+
+Reply with ONLY a JSON array of ticker symbols (e.g. ["NVDA", "MSFT", "GOOG"]). Use US exchange symbols. No other text.
+"""

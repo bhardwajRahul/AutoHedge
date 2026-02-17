@@ -52,8 +52,17 @@ pip install -U autohedge
 ### Environment Variables
 
 ```bash
-OPENAI_API_KEY=""
+# Jupiter API (token price & search tools)
+# Get a key at https://portal.jup.ag
+JUPITER_API_KEY=
+
+# OpenAI (experimental agents)
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
 WORKSPACE_DIR="agent_workspace"
+
+# Trading
+WALLET_PRIVATE_KEY=""
 ```
 
 See `.env.example` for a full reference.
@@ -61,13 +70,7 @@ See `.env.example` for a full reference.
 ### Basic Usage
 
 ```python
-from autohedge import AutoHedge
-
-stocks = ["NVDA"]
-trading_system = AutoHedge(stocks)
-
-task = "Analyze NVIDIA for a 50k allocation and recommend action."
-print(trading_system.run(task=task))
+autohedge 
 ```
 
 ---

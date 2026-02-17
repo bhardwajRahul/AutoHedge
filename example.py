@@ -1,7 +1,4 @@
-from dotenv import load_dotenv
-from autohedge.main import AutoHedge
-
-load_dotenv()
+from autohedge import AutoHedge  # loads .env from project root
 
 # Initialize the trading system (tickers are derived from the task by the director)
 trading_system = AutoHedge(

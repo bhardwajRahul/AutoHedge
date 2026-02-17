@@ -10,9 +10,14 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.columns import Columns
 from rich import box
-from dotenv import load_dotenv
 
-load_dotenv()
+from autohedge.env_loader import load_env, require_openai_key
+
+load_env()
+if not require_openai_key():
+    Console().print(
+        "[yellow]Warning: OPENAI_API_KEY not set. Set it in .env or export it.[/]"
+    )
 
 try:
     from importlib.metadata import version as _version

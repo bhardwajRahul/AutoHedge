@@ -6,7 +6,6 @@ from swarms import Conversation
 from autohedge.workers import director_agent
 
 
-
 class AutoHedge:
     """
     Main trading system that coordinates all agents and manages the trading cycle.

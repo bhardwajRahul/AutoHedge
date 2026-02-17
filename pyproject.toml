@@ -21,15 +21,19 @@ classifiers = [
     "Programming Language :: Python :: 3.9"
 ]
 
+[tool.poetry.scripts]
+autohedge = "autohedge.cli:main"
+
 [tool.poetry.dependencies]
 python = "^3.10"
+rich = "*"
 swarms = "*"
-tickr-agent="*"
 pydantic = "*"
 loguru = "*"
 swarm-models = "*"
 httpx = "*"
 solders = "*"
+yfinance = "*"
 
 
 [tool.poetry.group.lint.dependencies]

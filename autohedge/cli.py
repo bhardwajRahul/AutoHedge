@@ -1,0 +1,212 @@
+"""
+AutoHedge CLI — welcome screen and interactive REPL.
+"""
+
+import os
+import sys
+from pathlib import Path
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.text import Text
+from rich.columns import Columns
+from rich import box
+
+try:
+    from importlib.metadata import version as _version
+
+    VERSION = _version("autohedge")
+except Exception:
+    VERSION = "0.1.2"
+
+console = Console()
+
+# ASCII art: minimal "hedge" / chart vibe
+BANNER_ART = r"""
+    ▄▄▄▄▄▄▄
+   █████████
+  ▐▀▄▄▄▄▄▀▌
+     ▀ ▀
+  ▄▄ ▀▄▀ ▄▄
+"""
+
+TIPS = [
+    "Enter a task to run (e.g. 'Analyze NVDA for 50k allocation')",
+    "Type 'stocks AAPL,MSFT' to set tickers, then run a task",
+    "Type 'quit' or 'exit' to leave",
+    "Type 'help' or '?' for commands",
+]
+
+RECENT_FILE = Path.home() / ".autohedge" / "recent_tasks.txt"
+MAX_RECENT = 5
+
+
+def _get_recent_tasks() -> list[str]:
+    if not RECENT_FILE.exists():
+        return []
+    try:
+        lines = RECENT_FILE.read_text().strip().splitlines()
+        return [
+            ln.strip() for ln in lines[-MAX_RECENT:] if ln.strip()
+        ]
+    except Exception:
+        return []
+
+
+def _append_recent(task: str) -> None:
+    try:
+        RECENT_FILE.parent.mkdir(parents=True, exist_ok=True)
+        recent = _get_recent_tasks()
+        if task in recent:
+            recent.remove(task)
+        recent.append(task)
+        RECENT_FILE.write_text("\n".join(recent[-MAX_RECENT:]))
+    except Exception:
+        pass
+
+
+def _welcome() -> None:
+    cwd = Path.cwd()
+    try:
+        cwd_str = cwd.relative_to(Path.home())
+        cwd_display = f"~/{cwd_str}"
+    except ValueError:
+        cwd_display = str(cwd)
+
+    welcome = Text("Welcome to AutoHedge", style="bold orange1")
+    subtitle = Text(
+        f"v{VERSION} · {cwd_display}",
+        style="dim",
+    )
+
+    tips_text = Text(
+        "Tips for getting started\n", style="bold orange1"
+    )
+    tips_text.append(" — ".join(TIPS[:2]) + "\n", style="dim")
+    tips_text.append(" — ".join(TIPS[2:]), style="dim")
+
+    recent = _get_recent_tasks()
+    recent_heading = Text("Recent activity\n", style="bold orange1")
+    if recent:
+        recent_body = Text("\n".join(recent[-3:]), style="dim")
+    else:
+        recent_body = Text("No recent activity", style="dim")
+
+    left = Text()
+    left.append(welcome)
+    left.append("\n\n")
+    left.append(BANNER_ART, style="cyan")
+    left.append("\n")
+    left.append(subtitle)
+
+    right = Text()
+    right.append(tips_text)
+    right.append("\n")
+    right.append("─" * 50 + "\n", style="dim")
+    right.append(recent_heading)
+    right.append(recent_body)
+
+    # Two-column layout inside one panel (Claude Code style)
+    left_panel = Panel(
+        left,
+        box=box.MINIMAL,
+        padding=(0, 1),
+        border_style="dim",
+        expand=False,
+    )
+    right_panel = Panel(
+        right,
+        box=box.MINIMAL,
+        padding=(0, 1),
+        border_style="dim",
+        expand=True,
+    )
+    cols = Columns(
+        [left_panel, right_panel], expand=True, equal=False
+    )
+    console.print(
+        Panel(
+            cols,
+            title=f"[bold]AutoHedge v{VERSION}[/]",
+            title_align="left",
+            border_style="cyan",
+            padding=(0, 1),
+        )
+    )
+
+
+def run_repl(default_stocks: list[str] | None = None) -> None:
+    stocks = default_stocks or ["NVDA"]
+    _welcome()
+
+    while True:
+        try:
+            prompt = Text("> ", style="bold cyan")
+            console.print(prompt, end="")
+            line = input().strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Goodbye.[/]")
+            break
+
+        if not line:
+            continue
+
+        lower = line.lower()
+        if lower in ("quit", "exit", "q"):
+            console.print("[dim]Goodbye.[/]")
+            break
+
+        if lower in ("help", "?", "h"):
+            for t in TIPS:
+                console.print(f"  [dim]·[/] {t}")
+            continue
+
+        if lower.startswith("stocks "):
+            raw = line[6:].strip()
+            stocks = [
+                s.strip().upper()
+                for s in raw.replace(",", " ").split()
+                if s.strip()
+            ]
+            console.print(
+                f"[dim]Stocks set to: {', '.join(stocks)}[/]"
+            )
+            continue
+
+        # Treat as task
+        task = line
+        _append_recent(task)
+        try:
+            from autohedge import AutoHedge
+
+            system = AutoHedge(stocks=stocks)
+            console.print("[dim]Running...[/]")
+            result = system.run(task=task)
+            console.print(
+                Panel(
+                    str(result)[:2000],
+                    title="Result",
+                    border_style="green",
+                )
+            )
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/]")
+
+
+def main() -> None:
+    """Entry point for the AutoHedge CLI."""
+    default_stocks = os.environ.get("AUTOHEDGE_STOCKS")
+    if default_stocks:
+        stocks = [
+            s.strip().upper()
+            for s in default_stocks.split(",")
+            if s.strip()
+        ]
+    else:
+        stocks = None
+    run_repl(default_stocks=stocks)
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

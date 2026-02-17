@@ -107,7 +107,6 @@ MIT License. See [LICENSE](LICENSE) for details.
 ## Acknowledgments
 
 - [Swarms](https://swarms.ai) for the AI agent framework
-- [Tickr Agent](https://github.com/The-Swarm-Corporation/tickr-agent) for market data integration
 
 ---
 

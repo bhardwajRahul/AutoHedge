@@ -16,8 +16,12 @@ from autohedge.prompts import (
 )
 from autohedge.tools.exa_search_tool import exa_search
 
-_NOW = datetime.now().isoformat()
-_SYSTEM_SUFFIX = f"\n\nCurrent date and time: {_NOW}"
+_NOW = datetime.now()
+# Exact date and time for all agent system prompts (simple, single line)
+_DATE_TIME_LINE = _NOW.strftime("%A, %B %d, %Y at %H:%M")
+if _NOW.tzinfo:
+    _DATE_TIME_LINE += f" {_NOW.tzname() or ''}"
+_SYSTEM_SUFFIX = f"\n\nCurrent date and time (use this as now): {_DATE_TIME_LINE.strip()}"
 
 sentiment_agent = Agent(
     agent_name="Sentiment-Agent",

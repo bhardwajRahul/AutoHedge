@@ -2,6 +2,7 @@
 AutoHedge CLI — welcome screen and interactive REPL.
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -185,8 +186,42 @@ def run_repl() -> None:
             console.print(f"[red]Error: {e}[/]")
 
 
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="autohedge",
+        description="AutoHedge — interactive REPL for running research and hedging tasks.",
+        epilog="""
+Commands (when running the REPL):
+  <task>     Run a task (e.g. 'Analyze NVDA for 50k allocation')
+  help, ?, h Show in-REPL tips
+  quit, exit, q  Exit the REPL
+
+Examples:
+  autohedge              Start the interactive REPL
+  autohedge help         Show this help
+  autohedge --help       Show this help
+  autohedge --version    Show version
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=f"%(prog)s {VERSION}",
+        help="Show program version and exit.",
+    )
+    return parser
+
+
 def main() -> None:
     """Entry point for the AutoHedge CLI."""
+    parser = _build_parser()
+    # Treat bare "help" as --help (e.g. "autohedge help")
+    if len(sys.argv) == 2 and sys.argv[1].lower() == "help":
+        parser.print_help()
+        sys.exit(0)
+    parser.parse_args()  # exits on --help / --version
     run_repl()
     sys.exit(0)
 
